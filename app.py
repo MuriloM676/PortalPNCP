@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 import locale
+from flask_caching import Cache
 
 app = Flask(__name__)
 

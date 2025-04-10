@@ -8,6 +8,7 @@
         body {
             padding: 20px;
             background-color: #f8f9fa;
+            transition: background-color 0.3s, color 0.3s;
         }
         .container {
             max-width: 1400px;
@@ -15,14 +16,17 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
         h1 {
             color: #343a40;
             margin-bottom: 20px;
+            transition: color 0.3s;
         }
         .form-label {
             font-weight: 500;
             color: #495057;
+            transition: color 0.3s;
         }
         .pagination {
             margin-top: 20px;
@@ -33,23 +37,29 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
+            background-color: #fff; /* Fundo padrão para o tema claro */
+            color: #212529; /* Texto padrão para o tema claro */
         }
         .custom-table th, .custom-table td {
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #dee2e6;
+            transition: border-color 0.3s, background-color 0.3s, color 0.3s;
         }
         .custom-table th {
             background-color: #007bff;
             color: #fff;
             font-weight: 600;
             text-transform: uppercase;
+            transition: background-color 0.3s, color 0.3s;
         }
         .custom-table tbody tr:nth-child(even) {
             background-color: #f8f9fa;
+            transition: background-color 0.3s;
         }
         .custom-table tbody tr:hover {
             background-color: #e9ecef;
+            transition: background-color 0.3s;
         }
         .custom-table td:nth-child(1) { /* Número */
             width: 10%;
@@ -66,11 +76,92 @@
         .custom-table td:nth-child(5) { /* Órgão */
             width: 25%;
         }
+
+        /* Estilos para o tema escuro */
+        body.dark-theme {
+            background-color: #1a1a1a; /* Fundo mais escuro */
+            color: #d1d4d8;
+        }
+        .dark-theme .container {
+            background-color: #2c2f33;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.05);
+        }
+        .dark-theme h1 {
+            color: #d1d4d8;
+        }
+        .dark-theme .form-label {
+            color: #adb5bd;
+        }
+        /* Ajustes específicos para a tabela no tema escuro */
+        .dark-theme .custom-table {
+            background-color: #2c2f33 !important; /* Sobrescreve estilos inline */
+            color: #d1d4d8 !important;
+        }
+        .dark-theme .custom-table th {
+            background-color: #0056b3 !important; /* Azul mais escuro para o cabeçalho */
+            color: #e9ecef !important;
+        }
+        .dark-theme .custom-table td {
+            background-color: #2c2f33 !important;
+            border-bottom: 1px solid #495057 !important;
+            color: #d1d4d8 !important;
+        }
+        .dark-theme .custom-table tbody tr:nth-child(even) {
+            background-color: #343a40 !important;
+        }
+        .dark-theme .custom-table tbody tr:hover {
+            background-color: #495057 !important;
+        }
+        .dark-theme .form-control {
+            background-color: #343a40;
+            color: #d1d4d8;
+            border-color: #6c757d;
+        }
+        .dark-theme .form-control:focus {
+            background-color: #343a40;
+            color: #d1d4d8;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+        }
+        .dark-theme .form-control::placeholder {
+            color: #adb5bd;
+        }
+        .dark-theme .btn-primary {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .dark-theme .btn-primary:hover {
+            background-color: #003d82;
+            border-color: #003d82;
+        }
+        .dark-theme .btn-secondary {
+            background-color: #495057;
+            border-color: #495057;
+        }
+        .dark-theme .btn-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .dark-theme .pagination .page-link {
+            background-color: #343a40;
+            color: #d1d4d8;
+            border-color: #6c757d;
+        }
+        .dark-theme .pagination .page-link:hover {
+            background-color: #495057;
+        }
+        .dark-theme .pagination .disabled .page-link {
+            background-color: #343a40;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Painel de Monitoramento de Licitações</h1>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Painel de Monitoramento de Licitações</h1>
+            <button id="theme-toggle" onclick="toggleTheme()" class="btn btn-secondary">Alternar Tema</button>
+        </div>
         
         <!-- Formulário de filtros -->
         <form method="POST" class="mb-4" onsubmit="return validarFormulario()">
@@ -118,7 +209,8 @@
             {{ tabela | safe }}
         </div>
         
-        <!-- Paginação -->
+        <!-- Paginação (ocultar se houver apenas uma página) -->
+        {% if total_paginas > 1 %}
         <nav class="pagination">
             <ul class="pagination">
                 <li class="page-item {% if pagina <= 1 %}disabled{% endif %}">
@@ -132,9 +224,33 @@
                 </li>
             </ul>
         </nav>
+        {% endif %}
     </div>
 
     <script>
+        // Função para alternar o tema
+        function toggleTheme() {
+            document.body.classList.toggle("dark-theme");
+            // Salvar a preferência do usuário no localStorage
+            const isDarkTheme = document.body.classList.contains("dark-theme");
+            localStorage.setItem("theme", isDarkTheme ? "dark" : "light");
+            // Atualizar o texto do botão
+            const themeButton = document.getElementById("theme-toggle");
+            themeButton.textContent = isDarkTheme ? "Tema Claro" : "Tema Escuro";
+        }
+
+        // Carregar o tema salvo ao iniciar a página
+        document.addEventListener("DOMContentLoaded", function() {
+            const savedTheme = localStorage.getItem("theme");
+            const themeButton = document.getElementById("theme-toggle");
+            if (savedTheme === "dark") {
+                document.body.classList.add("dark-theme");
+                themeButton.textContent = "Tema Claro";
+            } else {
+                themeButton.textContent = "Tema Escuro";
+            }
+        });
+
         function validarFormulario() {
             const cnpj = document.getElementById("cnpj").value;
 
